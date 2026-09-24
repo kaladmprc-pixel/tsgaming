@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TS Gaming Club — Онлайн Бронирование ПК</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter & Orbitron -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@600;800;900&display=swap">
+    <!-- Flatpickr CSS & Russian Localization -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/ru.js"></script>
+    <!-- Telegram Mini App WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Firebase SDK (Compat Version) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0b0f17',
+                        cardBg: '#151c28',
+                        cardBorder: '#232d3f',
+                        accentBlue: '#3b82f6',
+                        accentGreen: '#10b981',
+                        accentRed: '#ef4444',
+                        accentGold: '#f59e0b',
+                        accentPurple: '#8b5cf6',
+                        accentCyan: '#06b6d4'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        cyber: ['Orbitron', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0b0f17;
+            color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0b0f17; }
+        ::-webkit-scrollbar-thumb { background: #232d3f; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
+        .glow-green { box-shadow: 0 0 15px rgba(16, 185, 129, 0.25); }
+        .glow-red { box-shadow: 0 0 15px rgba(239, 68, 68, 0.25); }
+        .glow-cyan { box-shadow: 0 0 20px rgba(6, 182, 212, 0.35); }
+        .glow-gold { box-shadow: 0 0 18px rgba(245, 158, 11, 0.3); }
+        .bg-cyber-pattern {
+            background-image: radial-gradient(rgba(6, 182, 212, 0.08) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased bg-cyber-pattern">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Header -->
+    <header class="bg-cardBg/90 backdrop-blur-md border-b border-cardBorder sticky top-0 z-40 px-4 md:px-6 py-3.5 flex justify-between items-center shadow-xl">
+        <div class="flex items-center space-x-3">
+            <div class="p-2.5 bg-gradient-to-br from-accentCyan/20 to-accentBlue/20 border border-accentCyan/40 rounded-xl text-accentCyan">
+                <i class="fa-solid fa-gamepad text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-black tracking-wider text-white font-cyber flex items-center gap-2">
+                    TS 
+                    <span class="text-[10px] tracking-normal px-2 py-0.5 rounded bg-accentCyan/20 text-accentCyan font-semibold border border-accentCyan/30">20 GAMING PCs</span>
+                </h1>
+                <p class="text-xs text-gray-400" id="current-time-display">Загрузка времени...</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button onclick="toggleCloudModal()" class="px-3 py-1.5 bg-accentCyan/10 hover:bg-accentCyan/20 text-accentCyan border border-accentCyan/30 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-cloud"></i> <span class="hidden sm:inline">Облако</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- CLIENT BOOKING MAIN SECTION -->
+    <main class="max-w-[1400px] w-full mx-auto px-4 md:px-6 py-6 space-y-6">
+        
+        <!-- Hero Header Banner -->
+        <div class="relative overflow-hidden bg-gradient-to-r from-cardBg via-darkBg to-cardBg border border-cardBorder rounded-3xl p-6 md:p-8 shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="space-y-2 text-center md:text-left z-10">
+                <span class="px-3 py-1 rounded-full bg-accentCyan/10 text-accentCyan border border-accentCyan/30 text-xs font-bold tracking-widest uppercase">
+                    <i class="fa-solid fa-bolt mr-1"></i> Онлайн Бронирование
+                </span>
+                <h2 class="text-2xl md:text-3xl font-black text-white font-cyber tracking-wide">
+                    ЗАБРОНИРУЙ СВОЁ ИГРОВОЕ МЕСТО
+                </h2>
+                <p class="text-xs md:text-sm text-gray-400 max-w-xl">
+                    Выберите свободный ПК, тариф и напитки. Ваша заявка мгновенно передастся на кассу клуба!
+                </p>
+            </div>
+            
+            <div class="flex items-center gap-3 z-10">
+                <button onclick="scrollToPcSelection()" class="px-5 py-3 bg-gradient-to-r from-accentBlue to-accentCyan text-white text-xs font-bold font-cyber rounded-2xl shadow-lg hover:shadow-cyan-500/20 transition flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-desktop"></i> ВЫБРАТЬ ИГРОВОЙ ПК
+                </button>
+            </div>
+        </div>
+
+        <!-- Booking Main Container (Grid + Form) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Left: PC Map Selection (8 cols) -->
+            <div class="lg:col-span-8 bg-cardBg border border-cardBorder rounded-3xl p-5 md:p-6 shadow-xl space-y-4">
+                <div class="flex flex-wrap justify-between items-center gap-3 border-b border-cardBorder/60 pb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2 font-cyber">
+                            <i class="fa-solid fa-map-location-dot text-accentCyan"></i> Карта Игрового Зала (20 ПК)
+                        </h3>
+                        <p class="text-xs text-gray-400">Нажмите на свободный компьютер для выбора</p>
+                    </div>
+
+                    <!-- Map Legend -->
+                    <div class="flex items-center gap-3 text-xs font-medium bg-darkBg px-3 py-1.5 rounded-xl border border-cardBorder">
+                        <span class="flex items-center gap-1.5 text-emerald-400">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Свободен
+                        </span>
+                        <span class="flex items-center gap-1.5 text-accentCyan">
+                            <span class="w-2.5 h-2.5 rounded-full bg-accentCyan"></span> Ваш выбор
+                        </span>
+                        <span class="flex items-center gap-1.5 text-amber-400">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Бронь
+                        </span>
+                        <span class="flex items-center gap-1.5 text-red-400">
+                            <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> Занят
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Client Interactive Grid -->
+                <div id="client-pc-grid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3.5 pt-2">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Right: Client Booking Panel Form (4 cols) -->
+            <div class="lg:col-span-4 bg-cardBg border border-cardBorder rounded-3xl p-5 md:p-6 shadow-xl flex flex-col justify-between space-y-5">
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2 font-cyber border-b border-cardBorder/60 pb-3">
+                        <i class="fa-solid fa-ticket text-accentGold"></i> Оформление Брони
+                    </h3>
+
+                    <form id="client-booking-form" onsubmit="handleClientSubmitBooking(event)" class="space-y-4">
+                        
+                        <!-- Selected PCs Display -->
+                        <div class="p-3 bg-darkBg border border-cardBorder rounded-2xl flex justify-between items-center">
+                            <span class="text-xs text-gray-400">Выбранные ПК:</span>
+                            <span id="client-selected-pcs-badge" class="text-xs font-bold text-accentCyan font-cyber">Выберите на карте</span>
+                        </div>
+
+                        <!-- Client Name & Phone -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[11px] font-semibold text-gray-400 mb-1">Имя Клиента</label>
+                                <input type="text" id="client-name-input" placeholder="Алексей" required class="w-full bg-darkBg border border-cardBorder rounded-xl px-3 py-2 text-xs font-semibold text-white focus:outline-none focus:border-accentCyan transition">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-gray-400 mb-1">Телефон</label>
+                                <input type="tel" id="client-phone-input" placeholder="+7 (707) 000-00-00" required class="w-full bg-darkBg border border-cardBorder rounded-xl px-3 py-2 text-xs font-semibold text-white focus:outline-none focus:border-accentCyan transition">
+                            </div>
+                        </div>
+
+                        <!-- Date & Start Time -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[11px] font-semibold text-gray-400 mb-1">Дата</label>
+                                <input type="text" id="client-booking-date" placeholder="ДД.ММ.ГГГГ" class="w-full bg-darkBg border border-cardBorder rounded-xl px-3 py-2 text-xs font-semibold text-white focus:outline-none focus:border-accentCyan transition cursor-pointer" required>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-gray-400 mb-1">Время (24ч)</label>
+                                <input type="text" id="client-booking-time" placeholder="ЧЧ:ММ" class="w-full bg-darkBg border border-cardBorder rounded-xl px-3 py-2 text-xs font-semibold text-white focus:outline-none focus:border-accentCyan transition cursor-pointer" required>
+                            </div>
+                        </div>
+
+                        <!-- Tariff Selection -->
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-400 mb-1">Выбор Игрового Тарифа</label>
+                            <select id="client-tariff-select" onchange="handleClientTariffChange()" class="w-full bg-darkBg border border-cardBorder rounded-xl px-3 py-2 text-xs font-semibold text-white focus:outline-none focus:border-accentCyan cursor-pointer">
+                                <option value="1000" data-hours="6" data-type="fixed">12:00 – 18:00 — 1000 ₸ (6 ч)</option>
+                                <option value="1500" data-hours="8" data-type="fixed">Ночь в будние — 1500 ₸ (8 ч)</option>
+                                <option value="2000" data-hours="8" data-type="fixed">Ночь в выходные — 2000 ₸ (8 ч)</option>
+                                <option value="1400" data-hours="3" data-type="fixed">Акция 2+1 — 1400 ₸ (3 ч)</option>
+                                <option value="2100" data-hours="5" data-type="fixed">Акция 3+2 — 2100 ₸ (5 ч)</option>
+                                <option value="2100" data-hours="4" data-type="fixed">Акция 3+1 — 2100 ₸ (4 ч)</option>
+                                <option value="500" data-hours="1" data-type="hourly">Почасовой — 500 ₸ / час</option>
+                            </select>
+                        </div>
+
+                        <!-- Dynamic Hourly Range for Clients -->
+                        <div id="client-hourly-box" class="hidden bg-darkBg/60 p-3 rounded-xl border border-cardBorder space-y-2">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-gray-400">Часов игрового времени:</span>
+                                <span id="client-hourly-text" class="font-bold text-accentGold font-cyber">1 час</span>
+                            </div>
+                            <input type="range" id="client-hourly-range" min="1" max="12" value="1" step="1" oninput="updateClientHourlyValue(this.value)" class="w-full accent-accentCyan cursor-pointer">
+                        </div>
+
+                        <!-- Drinks Pre-order -->
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-400 mb-1.5 flex justify-between">
+                                <span>Предзаказ напитков (готовы к приходу)</span>
+                                <span class="text-accentPurple text-[10px]"><i class="fa-solid fa-wine-bottle"></i> Бар</span>
+                            </label>
+                            <div id="client-drinks-list" class="grid grid-cols-3 gap-2">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Total Price & Submit Button -->
+                        <div class="pt-2 border-t border-cardBorder space-y-3">
+                            <div class="p-3 bg-darkBg border border-cardBorder rounded-2xl flex justify-between items-center">
+                                <span class="text-xs text-gray-400">Итого к оплате:</span>
+                                <span id="client-total-cost-display" class="text-lg font-black text-accentGold font-cyber">0 ₸</span>
+                            </div>
+
+                            <button type="submit" id="client-submit-btn" disabled class="w-full py-3.5 bg-gradient-to-r from-accentBlue via-accentCyan to-accentBlue disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-black font-cyber uppercase tracking-wider rounded-2xl shadow-xl hover:shadow-cyan-500/20 transition flex items-center justify-center gap-2 cursor-pointer">
+                                <i class="fa-solid fa-paper-plane text-base"></i> ОТПРАВИТЬ БРОНЬ НА КАССУ
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- CLIENT BOOKING TICKET CONFIRMATION MODAL -->
+    <div id="ticket-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-cardBg border border-accentCyan/40 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5 text-center relative overflow-hidden glow-cyan">
+            <div class="space-y-1">
+                <div class="w-14 h-14 bg-accentCyan/10 border border-accentCyan/30 text-accentCyan rounded-2xl mx-auto flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-qrcode"></i>
+                </div>
+                <h3 class="text-lg font-black text-white font-cyber tracking-wide">БРОНИРОВАНИЕ ОТПРАВЛЕНО!</h3>
+                <p class="text-xs text-emerald-400 font-semibold flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-check-circle"></i> Информация поступила на кассу клуба
+                </p>
+            </div>
+
+            <!-- Ticket Body -->
+            <div class="bg-darkBg border border-cardBorder rounded-2xl p-4 text-left space-y-3 font-sans text-xs">
+                <div class="flex justify-between border-b border-cardBorder pb-2">
+                    <span class="text-gray-400">Код брони:</span>
+                    <span id="ticket-id" class="font-mono font-bold text-accentCyan">#CC-8492</span>
+                </div>
+                <div class="flex justify-between border-b border-cardBorder pb-2">
+                    <span class="text-gray-400">Клиент:</span>
+                    <span id="ticket-client-name" class="font-bold text-white">Алексей</span>
+                </div>
+                <div class="flex justify-between border-b border-cardBorder pb-2">
+                    <span class="text-gray-400">Выбранные ПК:</span>
+                    <span id="ticket-pcs" class="font-bold text-accentBlue">ПК-3, ПК-4</span>
+                </div>
+                <div class="flex justify-between border-b border-cardBorder pb-2">
+                    <span class="text-gray-400">Дата и время:</span>
+                    <span id="ticket-time" class="font-bold text-white">Сегодня | 18:00</span>
+                </div>
+                <div class="flex justify-between border-b border-cardBorder pb-2">
+                    <span class="text-gray-400">Тариф:</span>
+                    <span id="ticket-tariff" class="font-bold text-white">Ночь в будние</span>
+                </div>
+                <div id="ticket-drinks-row" class="flex justify-between border-b border-cardBorder pb-2">
+                    <span class="text-gray-400">Предзаказ бар:</span>
+                    <span id="ticket-drinks" class="font-bold text-accentPurple">Gorilla x1</span>
+                </div>
+                <div class="flex justify-between items-center pt-1">
+                    <span class="text-gray-400">К оплате на кассе:</span>
+                    <span id="ticket-price" class="text-base font-black text-accentGold font-cyber">1 500 ₸</span>
+                </div>
+            </div>
+
+            <div class="bg-white p-3 rounded-2xl w-36 h-36 mx-auto shadow-inner flex flex-col items-center justify-center space-y-1">
+                <i class="fa-solid fa-qrcode text-6xl text-slate-900"></i>
+                <span class="text-[9px] font-mono font-bold text-slate-600">ПОКАЖИТЕ НА КАССЕ</span>
+            </div>
+
+            <button onclick="closeTicketModal()" class="w-full py-3 bg-accentCyan text-slate-950 font-black font-cyber text-xs rounded-xl shadow-lg hover:bg-cyan-400 transition cursor-pointer">
+                ОК, ПОНЯТНО
+            </button>
+        </div>
+    </div>
+
+    <!-- FIREBASE CLOUD CONFIG MODAL -->
+    <div id="cloud-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-cardBg border border-accentCyan/40 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-cardBorder pb-3">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-cloud text-accentCyan"></i> Облачная База Данных
+                </h3>
+                <button onclick="toggleCloudModal()" class="text-gray-400 hover:text-white text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p class="text-xs text-gray-400 leading-relaxed">
+                Введите Firebase Config (JSON), чтобы телефон клиента и компьютер кассира синхронизировались через интернет.
+            </p>
+            <textarea id="firebase-config-input" rows="5" placeholder='{"apiKey": "...", "databaseURL": "https://..."}' class="w-full bg-darkBg border border-cardBorder rounded-xl p-3 text-xs font-mono text-accentCyan focus:outline-none focus:border-accentCyan"></textarea>
+            <div class="flex justify-end gap-2">
+                <button onclick="saveFirebaseConfig()" class="px-4 py-2 bg-accentCyan text-slate-950 font-bold text-xs rounded-xl hover:bg-cyan-400 transition">
+                    Сохранить
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TOTAL_PCS = 20;
+        const syncChannel = new BroadcastChannel('ts_gaming_club_channel');
+
+        const initialDrinks = [
+            { id: 'gorilla', name: 'Gorilla', price: 700, stock: 24, icon: 'fa-bolt-lightning', color: 'text-yellow-400' },
+            { id: 'dizzy', name: 'Dizzy', price: 700, stock: 12, icon: 'fa-wine-bottle', color: 'text-blue-400' },
+            { id: 'moxito', name: 'Moxito', price: 600, stock: 18, icon: 'fa-glass-water', color: 'text-emerald-400' }
+        ];
+
+        let pcs = [];
+        let drinks = [];
+        let clientSelectedPcIds = [];
+        let clientAttachedDrinks = { gorilla: 0, dizzy: 0, moxito: 0 };
+        let firebaseDB = null;
+
+        window.onload = function() {
+            loadFromLocalStorage();
+            initPcs();
+            initPickers();
+            initTelegramWebApp();
+            initFirebase();
+            updateClock();
+            setInterval(updateClock, 1000);
+            setInterval(renderClientPcGrid, 2000);
+            renderAll();
+        };
+
+        // BroadcastChannel sync listener
+        syncChannel.onmessage = (event) => {
+            if (event.data && event.data.type === 'STATE_UPDATE') {
+                loadFromLocalStorage();
+                renderAll();
+            }
+        };
+
+        function initTelegramWebApp() {
+            try {
+                if (window.Telegram && window.Telegram.WebApp) {
+                    const tg = window.Telegram.WebApp;
+                    tg.ready();
+                    tg.expand();
+                    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                        const u = tg.initDataUnsafe.user;
+                        const fullName = [u.first_name, u.last_name].filter(Boolean).join(' ');
+                        const clientNameInput = document.getElementById('client-name-input');
+                        if (clientNameInput && fullName) clientNameInput.value = fullName;
+                    }
+                }
+            } catch (e) {}
+        }
+
+        function initPickers() {
+            flatpickr.localize(flatpickr.l10ns.ru);
+            flatpickr("#client-booking-date", { dateFormat: "d.m.Y", defaultDate: new Date(), minDate: "today" });
+            flatpickr("#client-booking-time", { enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true, defaultDate: new Date() });
+        }
+
+        function initPcs() {
+            if (pcs.length !== TOTAL_PCS) {
+                pcs = [];
+                for (let i = 1; i <= TOTAL_PCS; i++) {
+                    pcs.push({ id: i, isOccupied: false, startTime: null, endTime: null, tariffName: '', cost: 0, bookedBy: '', futureBooking: null });
+                }
+                saveToLocalStorage();
+            }
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const timeStr = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            document.getElementById('current-time-display').innerText = `${dateStr} | ${timeStr}`;
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('cc20_pcs_state', JSON.stringify(pcs));
+            localStorage.setItem('cc20_drinks_state', JSON.stringify(drinks));
+        }
+
+        function loadFromLocalStorage() {
+            const savedPcs = localStorage.getItem('cc20_pcs_state');
+            const savedDrinks = localStorage.getItem('cc20_drinks_state');
+            if (savedPcs) pcs = JSON.parse(savedPcs);
+            drinks = savedDrinks ? JSON.parse(savedDrinks) : JSON.parse(JSON.stringify(initialDrinks));
+        }
+
+        function initFirebase() {
+            const cfg = localStorage.getItem('cc20_firebase_config');
+            if (cfg) {
+                try {
+                    const parsed = JSON.parse(cfg);
+                    if (!firebase.apps.length) firebase.initializeApp(parsed);
+                    firebaseDB = firebase.database();
+                    firebaseDB.ref('club_state').on('value', snapshot => {
+                        const val = snapshot.val();
+                        if (val) {
+                            if (val.pcs) pcs = val.pcs;
+                            if (val.drinks) drinks = val.drinks;
+                            saveToLocalStorage();
+                            renderAll();
+                        }
+                    });
+                } catch(e) {}
+            }
+        }
+
+        function toggleCloudModal() {
+            const modal = document.getElementById('cloud-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        function saveFirebaseConfig() {
+            const val = document.getElementById('firebase-config-input').value.trim();
+            localStorage.setItem('cc20_firebase_config', val);
+            toggleCloudModal();
+            initFirebase();
+            showToast('Firebase сохранен', 'Перезагрузка подлкючения...', 'success');
+        }
+
+        function pushStateSync() {
+            saveToLocalStorage();
+            syncChannel.postMessage({ type: 'STATE_UPDATE' });
+            if (firebaseDB) {
+                const transactions = JSON.parse(localStorage.getItem('cc20_transactions_state') || '[]');
+                const stats = JSON.parse(localStorage.getItem('cc20_stats_state') || '{"totalRevenue":0,"pcRevenue":0,"barRevenue":0}');
+                firebaseDB.ref('club_state').set({ pcs, drinks, transactions, stats });
+            }
+        }
+
+        function getPcStatus(pc) {
+            if (!pc) return { state: 'FREE' };
+            const now = new Date().getTime();
+
+            const hasActive = pc.isOccupied && pc.startTime && pc.endTime && (now < new Date(pc.endTime).getTime());
+            const hasFuture = pc.futureBooking && pc.futureBooking.startTime && (now < new Date(pc.futureBooking.startTime).getTime());
+
+            if (hasActive) return { state: 'ACTIVE', endMs: new Date(pc.endTime).getTime() };
+            if (hasFuture) return { state: 'RESERVED_FUTURE', futureBooking: pc.futureBooking };
+            return { state: 'FREE' };
+        }
+
+        function toggleClientPcSelection(id) {
+            const pc = pcs.find(p => p.id === id);
+            if (!pc) return;
+
+            const statusInfo = getPcStatus(pc);
+            if (statusInfo.state === 'ACTIVE') {
+                const endFormatted = new Date(pc.endTime).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+                showToast('ПК недоступен', `ПК-${id} занят в игре до ${endFormatted}`, 'error');
+                return;
+            }
+
+            const idx = clientSelectedPcIds.indexOf(id);
+            if (idx > -1) clientSelectedPcIds.splice(idx, 1);
+            else clientSelectedPcIds.push(id);
+
+            renderClientPcGrid();
+            renderClientBookingPanel();
+        }
+
+        function handleClientTariffChange() {
+            const tariffSelect = document.getElementById('client-tariff-select');
+            const selectedOption = tariffSelect.options[tariffSelect.selectedIndex];
+            const isHourly = selectedOption.getAttribute('data-type') === 'hourly';
+            document.getElementById('client-hourly-box').classList.toggle('hidden', !isHourly);
+            renderClientBookingPanel();
+        }
+
+        function updateClientHourlyValue(val) {
+            document.getElementById('client-hourly-text').innerText = `${val} ${val == 1 ? 'час' : val < 5 ? 'часа' : 'часов'}`;
+            renderClientBookingPanel();
+        }
+
+        function updateClientAttachedDrink(drinkId, delta) {
+            const drink = drinks.find(d => d.id === drinkId);
+            if (!drink) return;
+            const current = clientAttachedDrinks[drinkId] || 0;
+            const next = current + delta;
+
+            if (next >= 0 && next <= drink.stock) {
+                clientAttachedDrinks[drinkId] = next;
+                renderClientBookingPanel();
+            } else if (next > drink.stock) {
+                showToast('Ограничение', `На складе доступно ${drink.stock} шт.`, 'error');
+            }
+        }
+
+        function calculateClientTotalCost() {
+            if (clientSelectedPcIds.length === 0) return 0;
+            const tariffSelect = document.getElementById('client-tariff-select');
+            const selectedOption = tariffSelect.options[tariffSelect.selectedIndex];
+            const isHourly = selectedOption.getAttribute('data-type') === 'hourly';
+
+            let pcPrice = parseInt(tariffSelect.value);
+            if (isHourly) {
+                const hours = parseInt(document.getElementById('client-hourly-range').value) || 1;
+                pcPrice = pcPrice * hours;
+            }
+
+            let totalDrinksCost = 0;
+            drinks.forEach(d => {
+                totalDrinksCost += (clientAttachedDrinks[d.id] || 0) * d.price;
+            });
+
+            return (clientSelectedPcIds.length * pcPrice) + totalDrinksCost;
+        }
+
+        function handleClientSubmitBooking(e) {
+            e.preventDefault();
+            if (clientSelectedPcIds.length === 0) return;
+
+            const clientName = document.getElementById('client-name-input').value.trim() || 'Клиент';
+            const clientPhone = document.getElementById('client-phone-input').value.trim();
+            const bookingDate = document.getElementById('client-booking-date').value;
+            const startTimeVal = document.getElementById('client-booking-time').value;
+
+            const tariffSelect = document.getElementById('client-tariff-select');
+            const selectedOption = tariffSelect.options[tariffSelect.selectedIndex];
+            const isHourly = selectedOption.getAttribute('data-type') === 'hourly';
+
+            let durationHours = parseFloat(selectedOption.getAttribute('data-hours')) || 1;
+            let tariffPrice = parseInt(tariffSelect.value);
+
+            if (isHourly) {
+                durationHours = parseInt(document.getElementById('client-hourly-range').value) || 1;
+                tariffPrice = tariffPrice * durationHours;
+            }
+
+            const tariffName = selectedOption.text.split('—')[0].trim();
+            const [day, month, year] = bookingDate.split('.').map(Number);
+            const [hours, minutes] = startTimeVal.split(':').map(Number);
+            const startDate = new Date(year, month - 1, day, hours, minutes);
+            const endDate = new Date(startDate.getTime() + durationHours * 3600000);
+            const now = new Date();
+
+            const isFuture = startDate.getTime() > now.getTime() + 60000;
+
+            clientSelectedPcIds.forEach(id => {
+                const pc = pcs.find(p => p.id === id);
+                if (pc) {
+                    if (isFuture) {
+                        pc.futureBooking = { startTime: startDate.toISOString(), endTime: endDate.toISOString(), tariffName, cost: tariffPrice, bookedBy: clientName };
+                    } else {
+                        pc.isOccupied = true;
+                        pc.startTime = startDate.toISOString();
+                        pc.endTime = endDate.toISOString();
+                        pc.tariffName = tariffName;
+                        pc.cost = tariffPrice;
+                        pc.bookedBy = clientName;
+                    }
+                }
+            });
+
+            let attachedSummary = [];
+            let totalBarRevenue = 0;
+            drinks.forEach(d => {
+                const qty = clientAttachedDrinks[d.id] || 0;
+                if (qty > 0) {
+                    d.stock = Math.max(0, d.stock - qty);
+                    totalBarRevenue += qty * d.price;
+                    attachedSummary.push(`${d.name} x${qty}`);
+                }
+            });
+
+            const totalCost = (clientSelectedPcIds.length * tariffPrice) + totalBarRevenue;
+            const pcListStr = clientSelectedPcIds.map(id => 'ПК-' + id).join(', ');
+            const bookingCode = '#TS-' + Math.floor(1000 + Math.random() * 9000);
+
+            // Local Transactions log push for Cashier
+            const existingTrans = JSON.parse(localStorage.getItem('cc20_transactions_state') || '[]');
+            existingTrans.unshift({
+                time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+                admin: `📱 Онлайн (${clientName})`,
+                type: 'Онлайн Бронь',
+                details: `${pcListStr} (${tariffName})${attachedSummary.length > 0 ? ' + Бар: ' + attachedSummary.join(', ') : ''} [Тел: ${clientPhone}]`,
+                durationQty: `${durationHours} ч.`,
+                amount: totalCost
+            });
+            localStorage.setItem('cc20_transactions_state', JSON.stringify(existingTrans));
+
+            // Stats sync
+            const stats = JSON.parse(localStorage.getItem('cc20_stats_state') || '{"totalRevenue":0,"pcRevenue":0,"barRevenue":0}');
+            stats.pcRevenue += (clientSelectedPcIds.length * tariffPrice);
+            stats.barRevenue += totalBarRevenue;
+            stats.totalRevenue += totalCost;
+            localStorage.setItem('cc20_stats_state', JSON.stringify(stats));
+
+            pushStateSync();
+
+            // Populate Ticket Modal
+            document.getElementById('ticket-id').innerText = bookingCode;
+            document.getElementById('ticket-client-name').innerText = `${clientName} (${clientPhone})`;
+            document.getElementById('ticket-pcs').innerText = pcListStr;
+            document.getElementById('ticket-time').innerText = `${bookingDate} | ${startTimeVal}`;
+            document.getElementById('ticket-tariff').innerText = tariffName;
+            
+            const drinksRow = document.getElementById('ticket-drinks-row');
+            if (attachedSummary.length > 0) {
+                drinksRow.classList.remove('hidden');
+                document.getElementById('ticket-drinks').innerText = attachedSummary.join(', ');
+            } else {
+                drinksRow.classList.add('hidden');
+            }
+            document.getElementById('ticket-price').innerText = `${totalCost.toLocaleString('ru-RU')} ₸`;
+            document.getElementById('ticket-modal').classList.remove('hidden');
+
+            clientSelectedPcIds = [];
+            clientAttachedDrinks = { gorilla: 0, dizzy: 0, moxito: 0 };
+            renderAll();
+        }
+
+        function closeTicketModal() {
+            document.getElementById('ticket-modal').classList.add('hidden');
+        }
+
+        function scrollToPcSelection() {
+            document.getElementById('client-pc-grid').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function renderAll() {
+            renderClientPcGrid();
+            renderClientBookingPanel();
+        }
+
+        function renderClientPcGrid() {
+            const grid = document.getElementById('client-pc-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            pcs.forEach(pc => {
+                const isSelected = clientSelectedPcIds.includes(pc.id);
+                const statusInfo = getPcStatus(pc);
+
+                let cardClass = '';
+                let statusBadge = '';
+                let statusSubtext = '';
+
+                if (statusInfo.state === 'ACTIVE') {
+                    cardClass = 'bg-red-950/20 border-red-500/40 glow-red cursor-not-allowed opacity-80';
+                    statusBadge = `<span class="px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/30 font-bold text-[10px]">Занят</span>`;
+                    const endFormatted = new Date(pc.endTime).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+                    statusSubtext = `<span class="text-[10px] text-red-400 block font-medium">В игре до ${endFormatted}</span>`;
+                } else if (isSelected) {
+                    cardClass = 'bg-accentCyan/20 border-accentCyan glow-cyan cursor-pointer transform scale-[1.03] ring-2 ring-accentCyan/50';
+                    statusBadge = `<span class="px-2 py-0.5 rounded bg-accentCyan/30 text-accentCyan border border-accentCyan/50 font-bold text-[10px] font-cyber">Выбран</span>`;
+                    statusSubtext = `<span class="text-xs font-bold text-accentCyan">Готов к брони</span>`;
+                } else if (statusInfo.state === 'RESERVED_FUTURE') {
+                    cardClass = 'bg-darkBg hover:bg-cardBg border-amber-500/50 glow-gold cursor-pointer';
+                    const startFormatted = new Date(statusInfo.futureBooking.startTime).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+                    statusBadge = `<span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold text-[10px]">Бронь с ${startFormatted}</span>`;
+                    statusSubtext = `<span class="text-[10px] text-emerald-400 block font-bold">Свободен сейчас!</span>`;
+                } else {
+                    cardClass = 'bg-darkBg hover:bg-cardBg border-emerald-500/30 hover:border-emerald-500/60 glow-green cursor-pointer';
+                    statusBadge = `<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold text-[10px]">Свободен</span>`;
+                    statusSubtext = `<span class="text-[11px] text-gray-400">Нажмите для выбора</span>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = `border rounded-2xl p-3.5 flex flex-col justify-between transition-all duration-200 min-h-[110px] ${cardClass}`;
+                card.onclick = () => toggleClientPcSelection(pc.id);
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <span class="text-sm font-black text-white font-cyber flex items-center gap-1.5">
+                            <i class="fa-solid fa-desktop text-xs"></i> ПК-${pc.id}
+                        </span>
+                        ${statusBadge}
+                    </div>
+                    <div class="mt-3 text-center">${statusSubtext}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderClientBookingPanel() {
+            const badgeEl = document.getElementById('client-selected-pcs-badge');
+            const submitBtn = document.getElementById('client-submit-btn');
+
+            if (clientSelectedPcIds.length === 0) {
+                badgeEl.innerText = 'Выберите на карте';
+                badgeEl.className = 'text-xs font-bold text-gray-500';
+                submitBtn.disabled = true;
+            } else {
+                badgeEl.innerText = clientSelectedPcIds.map(id => `ПК-${id}`).join(', ');
+                badgeEl.className = 'text-xs font-bold text-accentCyan font-cyber';
+                submitBtn.disabled = false;
+            }
+
+            const drinksContainer = document.getElementById('client-drinks-list');
+            if (drinksContainer) {
+                drinksContainer.innerHTML = '';
+                drinks.forEach(d => {
+                    const count = clientAttachedDrinks[d.id] || 0;
+                    const div = document.createElement('div');
+                    div.className = 'bg-darkBg border border-cardBorder rounded-2xl p-2 flex flex-col items-center justify-between text-center';
+                    div.innerHTML = `
+                        <span class="text-[10px] font-bold text-gray-300 truncate w-full">${d.name}</span>
+                        <span class="text-[10px] text-accentGold font-semibold">${d.price} ₸</span>
+                        <div class="flex items-center gap-1 mt-1">
+                            <button type="button" onclick="updateClientAttachedDrink('${d.id}', -1)" class="w-5 h-5 bg-cardBg text-gray-300 hover:text-white rounded flex items-center justify-center text-xs font-bold border border-cardBorder cursor-pointer">-</button>
+                            <span class="text-xs font-bold text-white px-1">${count}</span>
+                            <button type="button" onclick="updateClientAttachedDrink('${d.id}', 1)" class="w-5 h-5 bg-cardBg text-gray-300 hover:text-white rounded flex items-center justify-center text-xs font-bold border border-cardBorder cursor-pointer">+</button>
+                        </div>
+                    `;
+                    drinksContainer.appendChild(div);
+                });
+            }
+
+            const total = calculateClientTotalCost();
+            document.getElementById('client-total-cost-display').innerText = `${total.toLocaleString('ru-RU')} ₸`;
+        }
+
+        function showToast(title, message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            let typeClasses = 'bg-cardBg border-accentCyan text-white';
+            if (type === 'error') typeClasses = 'bg-cardBg border-red-500 text-white';
+            if (type === 'success') typeClasses = 'bg-cardBg border-emerald-500 text-white';
+
+            toast.className = `pointer-events-auto p-3.5 rounded-2xl border shadow-2xl flex items-start gap-3 transform transition-all duration-300 translate-y-[-10px] opacity-0 max-w-sm ${typeClasses}`;
+            toast.innerHTML = `<div><h5 class="text-xs font-bold font-cyber">${title}</h5><p class="text-[11px] text-gray-300">${message}</p></div>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-[-10px]', 'opacity-0'), 10);
+            setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 3500);
+        }
+    </script>
+</body>
+</html>
