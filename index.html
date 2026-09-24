@@ -82,13 +82,18 @@
                     TS 
                     <span class="text-[10px] tracking-normal px-2 py-0.5 rounded bg-accentCyan/20 text-accentCyan font-semibold border border-accentCyan/30">20 GAMING PCs</span>
                 </h1>
-                <p class="text-xs text-gray-400" id="current-time-display">Загрузка времени...</p>
+                <p class="text-xs text-gray-400 flex items-center gap-2">
+                    <span id="current-time-display">Загрузка...</span>
+                    <span id="cloud-status-badge" class="px-1.5 py-0.5 rounded text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 font-mono">
+                        <i class="fa-solid fa-circle text-[7px] mr-1"></i>Оффлайн
+                    </span>
+                </p>
             </div>
         </div>
 
         <div class="flex items-center gap-2">
             <button onclick="toggleCloudModal()" class="px-3 py-1.5 bg-accentCyan/10 hover:bg-accentCyan/20 text-accentCyan border border-accentCyan/30 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
-                <i class="fa-solid fa-cloud"></i> <span class="hidden sm:inline">Облако</span>
+                <i class="fa-solid fa-cloud"></i> <span class="hidden sm:inline">Синхронизация</span>
             </button>
         </div>
     </header>
@@ -106,7 +111,7 @@
                     ЗАБРОНИРУЙ СВОЁ ИГРОВОЕ МЕСТО
                 </h2>
                 <p class="text-xs md:text-sm text-gray-400 max-w-xl">
-                    Выберите свободный ПК, тариф и напитки. Ваша заявка мгновенно передастся на кассу клуба!
+                    Выберите свободный ПК, тариф и напитки. Статус залов обновляется в реальном времени с кассы клуба.
                 </p>
             </div>
             
@@ -160,16 +165,13 @@
                         <i class="fa-solid fa-ticket text-accentGold"></i> Оформление Брони
                     </h3>
 
-                    <!-- Отключена встроенная HTML-валидация через novalidate -->
                     <form id="client-booking-form" onsubmit="handleClientSubmitBooking(event)" novalidate class="space-y-4">
                         
-                        <!-- Selected PCs Display -->
                         <div class="p-3 bg-darkBg border border-cardBorder rounded-2xl flex justify-between items-center">
                             <span class="text-xs text-gray-400">Выбранные ПК:</span>
                             <span id="client-selected-pcs-badge" class="text-xs font-bold text-accentCyan font-cyber">Выберите на карте</span>
                         </div>
 
-                        <!-- Client Name & Phone -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[11px] font-semibold text-gray-400 mb-1">Имя Клиента</label>
@@ -181,7 +183,6 @@
                             </div>
                         </div>
 
-                        <!-- Date & Start Time -->
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[11px] font-semibold text-gray-400 mb-1">Дата</label>
@@ -193,7 +194,6 @@
                             </div>
                         </div>
 
-                        <!-- Tariff Selection -->
                         <div>
                             <label class="block text-[11px] font-semibold text-gray-400 mb-1">Выбор Игрового Тарифа</label>
                             <select id="client-tariff-select" onchange="handleClientTariffChange()" class="w-full bg-darkBg border border-cardBorder rounded-xl px-3 py-2 text-xs font-semibold text-white focus:outline-none focus:border-accentCyan cursor-pointer">
@@ -207,7 +207,6 @@
                             </select>
                         </div>
 
-                        <!-- Dynamic Hourly Range for Clients -->
                         <div id="client-hourly-box" class="hidden bg-darkBg/60 p-3 rounded-xl border border-cardBorder space-y-2">
                             <div class="flex justify-between items-center text-xs">
                                 <span class="text-gray-400">Часов игрового времени:</span>
@@ -216,18 +215,14 @@
                             <input type="range" id="client-hourly-range" min="1" max="12" value="1" step="1" oninput="updateClientHourlyValue(this.value)" class="w-full accent-accentCyan cursor-pointer">
                         </div>
 
-                        <!-- Drinks Pre-order -->
                         <div>
                             <label class="block text-[11px] font-semibold text-gray-400 mb-1.5 flex justify-between">
                                 <span>Предзаказ напитков (готовы к приходу)</span>
                                 <span class="text-accentPurple text-[10px]"><i class="fa-solid fa-wine-bottle"></i> Бар</span>
                             </label>
-                            <div id="client-drinks-list" class="grid grid-cols-3 gap-2">
-                                <!-- Populated dynamically -->
-                            </div>
+                            <div id="client-drinks-list" class="grid grid-cols-3 gap-2"></div>
                         </div>
 
-                        <!-- Total Price & Submit Button -->
                         <div class="pt-2 border-t border-cardBorder space-y-3">
                             <div class="p-3 bg-darkBg border border-cardBorder rounded-2xl flex justify-between items-center">
                                 <span class="text-xs text-gray-400">Итого к оплате:</span>
@@ -258,35 +253,34 @@
                 </p>
             </div>
 
-            <!-- Ticket Body -->
             <div class="bg-darkBg border border-cardBorder rounded-2xl p-4 text-left space-y-3 font-sans text-xs">
                 <div class="flex justify-between border-b border-cardBorder pb-2">
                     <span class="text-gray-400">Код брони:</span>
-                    <span id="ticket-id" class="font-mono font-bold text-accentCyan">#CC-8492</span>
+                    <span id="ticket-id" class="font-mono font-bold text-accentCyan">#TS-0000</span>
                 </div>
                 <div class="flex justify-between border-b border-cardBorder pb-2">
                     <span class="text-gray-400">Клиент:</span>
-                    <span id="ticket-client-name" class="font-bold text-white">Алексей</span>
+                    <span id="ticket-client-name" class="font-bold text-white">Имя</span>
                 </div>
                 <div class="flex justify-between border-b border-cardBorder pb-2">
                     <span class="text-gray-400">Выбранные ПК:</span>
-                    <span id="ticket-pcs" class="font-bold text-accentBlue">ПК-3, ПК-4</span>
+                    <span id="ticket-pcs" class="font-bold text-accentBlue">ПК-1</span>
                 </div>
                 <div class="flex justify-between border-b border-cardBorder pb-2">
                     <span class="text-gray-400">Дата и время:</span>
-                    <span id="ticket-time" class="font-bold text-white">Сегодня | 18:00</span>
+                    <span id="ticket-time" class="font-bold text-white">Сегодня</span>
                 </div>
                 <div class="flex justify-between border-b border-cardBorder pb-2">
                     <span class="text-gray-400">Тариф:</span>
-                    <span id="ticket-tariff" class="font-bold text-white">Ночь в будние</span>
+                    <span id="ticket-tariff" class="font-bold text-white">Почасовой</span>
                 </div>
                 <div id="ticket-drinks-row" class="flex justify-between border-b border-cardBorder pb-2">
                     <span class="text-gray-400">Предзаказ бар:</span>
-                    <span id="ticket-drinks" class="font-bold text-accentPurple">Gorilla x1</span>
+                    <span id="ticket-drinks" class="font-bold text-accentPurple">-</span>
                 </div>
                 <div class="flex justify-between items-center pt-1">
                     <span class="text-gray-400">К оплате на кассе:</span>
-                    <span id="ticket-price" class="text-base font-black text-accentGold font-cyber">1 500 ₸</span>
+                    <span id="ticket-price" class="text-base font-black text-accentGold font-cyber">0 ₸</span>
                 </div>
             </div>
 
@@ -306,14 +300,14 @@
         <div class="bg-cardBg border border-accentCyan/40 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
             <div class="flex justify-between items-center border-b border-cardBorder pb-3">
                 <h3 class="text-base font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-cloud text-accentCyan"></i> Облачная База Данных
+                    <i class="fa-solid fa-cloud text-accentCyan"></i> Настройка Синхронизации
                 </h3>
                 <button onclick="toggleCloudModal()" class="text-gray-400 hover:text-white text-lg">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
             <p class="text-xs text-gray-400 leading-relaxed">
-                Введите Firebase Config (JSON), чтобы телефон клиента и компьютер кассира синхронизировались через интернет.
+                Введите Firebase JSON Config с кассы, чтобы клиентский Mini App подключался к базе ПК кассира в реальном времени.
             </p>
             <textarea id="firebase-config-input" rows="5" placeholder='{"apiKey": "...", "databaseURL": "https://..."}' class="w-full bg-darkBg border border-cardBorder rounded-xl p-3 text-xs font-mono text-accentCyan focus:outline-none focus:border-accentCyan"></textarea>
             <div class="flex justify-end gap-2">
@@ -329,9 +323,9 @@
         const syncChannel = new BroadcastChannel('ts_gaming_club_channel');
 
         const initialDrinks = [
-            { id: 'gorilla', name: 'Gorilla', price: 700, stock: 24, icon: 'fa-bolt-lightning', color: 'text-yellow-400' },
-            { id: 'dizzy', name: 'Dizzy', price: 700, stock: 12, icon: 'fa-wine-bottle', color: 'text-blue-400' },
-            { id: 'moxito', name: 'Moxito', price: 600, stock: 18, icon: 'fa-glass-water', color: 'text-emerald-400' }
+            { id: 'gorilla', name: 'Gorilla', price: 700, stock: 24 },
+            { id: 'dizzy', name: 'Dizzy', price: 700, stock: 12 },
+            { id: 'moxito', name: 'Moxito', price: 600, stock: 18 }
         ];
 
         let pcs = [];
@@ -341,18 +335,16 @@
         let firebaseDB = null;
 
         window.onload = function() {
-            loadFromLocalStorage();
             initPcs();
             initPickers();
             initTelegramWebApp();
             initFirebase();
             updateClock();
             setInterval(updateClock, 1000);
-            setInterval(renderClientPcGrid, 2000);
+            setInterval(renderClientPcGrid, 3000);
             renderAll();
         };
 
-        // BroadcastChannel sync listener
         syncChannel.onmessage = (event) => {
             if (event.data && event.data.type === 'STATE_UPDATE') {
                 loadFromLocalStorage();
@@ -378,17 +370,14 @@
 
         function initPickers() {
             flatpickr.localize(flatpickr.l10ns.ru);
-            
-            // Явное указание altInput для исключения системной валидации
             flatpickr("#client-booking-date", { 
                 dateFormat: "Y-m-d", 
                 altInput: true, 
-                altFormat: "j миллиарда Y г." ? "d.m.Y" : "d.m.Y", 
+                altFormat: "d.m.Y", 
                 defaultDate: new Date(), 
                 minDate: "today",
                 disableMobile: true
             });
-            
             flatpickr("#client-booking-time", { 
                 enableTime: true, 
                 noCalendar: true, 
@@ -400,13 +389,12 @@
         }
 
         function initPcs() {
-            if (pcs.length !== TOTAL_PCS) {
-                pcs = [];
-                for (let i = 1; i <= TOTAL_PCS; i++) {
-                    pcs.push({ id: i, isOccupied: false, startTime: null, endTime: null, tariffName: '', cost: 0, bookedBy: '', futureBooking: null });
-                }
-                saveToLocalStorage();
+            pcs = [];
+            for (let i = 1; i <= TOTAL_PCS; i++) {
+                pcs.push({ id: i, isOccupied: false, startTime: null, endTime: null, tariffName: '', cost: 0, bookedBy: '', futureBooking: null });
             }
+            drinks = JSON.parse(JSON.stringify(initialDrinks));
+            loadFromLocalStorage();
         }
 
         function updateClock() {
@@ -425,16 +413,20 @@
             const savedPcs = localStorage.getItem('cc20_pcs_state');
             const savedDrinks = localStorage.getItem('cc20_drinks_state');
             if (savedPcs) pcs = JSON.parse(savedPcs);
-            drinks = savedDrinks ? JSON.parse(savedDrinks) : JSON.parse(JSON.stringify(initialDrinks));
+            if (savedDrinks) drinks = JSON.parse(savedDrinks);
         }
 
         function initFirebase() {
             const cfg = localStorage.getItem('cc20_firebase_config');
+            const badge = document.getElementById('cloud-status-badge');
+
             if (cfg) {
                 try {
                     const parsed = JSON.parse(cfg);
                     if (!firebase.apps.length) firebase.initializeApp(parsed);
                     firebaseDB = firebase.database();
+
+                    // Слушаем обновления от кассира в реальном времени
                     firebaseDB.ref('club_state').on('value', snapshot => {
                         const val = snapshot.val();
                         if (val) {
@@ -443,8 +435,17 @@
                             saveToLocalStorage();
                             renderAll();
                         }
+                        if (badge) {
+                            badge.className = 'px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono';
+                            badge.innerHTML = '<i class="fa-solid fa-circle text-[7px] mr-1"></i>Касса Онлайн';
+                        }
                     });
-                } catch(e) {}
+                } catch(e) {
+                    if (badge) {
+                        badge.className = 'px-1.5 py-0.5 rounded text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 font-mono';
+                        badge.innerHTML = '<i class="fa-solid fa-circle text-[7px] mr-1"></i>Ошибка ключа';
+                    }
+                }
             }
         }
 
@@ -458,16 +459,15 @@
             localStorage.setItem('cc20_firebase_config', val);
             toggleCloudModal();
             initFirebase();
-            showToast('Firebase сохранен', 'Перезагрузка подлкючения...', 'success');
+            showToast('Облако', 'Данные подключения сохранены', 'success');
         }
 
         function pushStateSync() {
             saveToLocalStorage();
             syncChannel.postMessage({ type: 'STATE_UPDATE' });
             if (firebaseDB) {
-                const transactions = JSON.parse(localStorage.getItem('cc20_transactions_state') || '[]');
-                const stats = JSON.parse(localStorage.getItem('cc20_stats_state') || '{"totalRevenue":0,"pcRevenue":0,"barRevenue":0}');
-                firebaseDB.ref('club_state').set({ pcs, drinks, transactions, stats });
+                firebaseDB.ref('club_state/pcs').set(pcs);
+                firebaseDB.ref('club_state/drinks').set(drinks);
             }
         }
 
@@ -490,7 +490,7 @@
             const statusInfo = getPcStatus(pc);
             if (statusInfo.state === 'ACTIVE') {
                 const endFormatted = new Date(pc.endTime).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-                showToast('ПК недоступен', `ПК-${id} занят в игре до ${endFormatted}`, 'error');
+                showToast('ПК занят', `ПК-${id} сейчас в игре до ${endFormatted}`, 'error');
                 return;
             }
 
@@ -525,7 +525,7 @@
                 clientAttachedDrinks[drinkId] = next;
                 renderClientBookingPanel();
             } else if (next > drink.stock) {
-                showToast('Ограничение', `На складе доступно ${drink.stock} шт.`, 'error');
+                showToast('Ограничение', `Доступно на барном складе: ${drink.stock} шт.`, 'error');
             }
         }
 
@@ -552,7 +552,7 @@
         function handleClientSubmitBooking(e) {
             e.preventDefault();
             if (clientSelectedPcIds.length === 0) {
-                showToast('Ошибка', 'Выберите хотя бы один ПК', 'error');
+                showToast('Ошибка', 'Выберите ПК на карте', 'error');
                 return;
             }
 
@@ -581,62 +581,39 @@
 
             const endDate = new Date(startDate.getTime() + durationHours * 3600000);
             const now = new Date();
-
             const isFuture = startDate.getTime() > now.getTime() + 60000;
 
             clientSelectedPcIds.forEach(id => {
                 const pc = pcs.find(p => p.id === id);
                 if (pc) {
                     if (isFuture) {
-                        pc.futureBooking = { startTime: startDate.toISOString(), endTime: endDate.toISOString(), tariffName, cost: tariffPrice, bookedBy: clientName };
+                        pc.futureBooking = { startTime: startDate.toISOString(), endTime: endDate.toISOString(), tariffName, cost: tariffPrice, bookedBy: `${clientName} (${clientPhone})` };
                     } else {
                         pc.isOccupied = true;
                         pc.startTime = startDate.toISOString();
                         pc.endTime = endDate.toISOString();
                         pc.tariffName = tariffName;
                         pc.cost = tariffPrice;
-                        pc.bookedBy = clientName;
+                        pc.bookedBy = `${clientName} (${clientPhone})`;
                     }
                 }
             });
 
             let attachedSummary = [];
-            let totalBarRevenue = 0;
             drinks.forEach(d => {
                 const qty = clientAttachedDrinks[d.id] || 0;
                 if (qty > 0) {
                     d.stock = Math.max(0, d.stock - qty);
-                    totalBarRevenue += qty * d.price;
                     attachedSummary.push(`${d.name} x${qty}`);
                 }
             });
 
-            const totalCost = (clientSelectedPcIds.length * tariffPrice) + totalBarRevenue;
+            pushStateSync();
+
+            const totalCost = calculateClientTotalCost();
             const pcListStr = clientSelectedPcIds.map(id => 'ПК-' + id).join(', ');
             const bookingCode = '#TS-' + Math.floor(1000 + Math.random() * 9000);
 
-            // Local Transactions log push for Cashier
-            const existingTrans = JSON.parse(localStorage.getItem('cc20_transactions_state') || '[]');
-            existingTrans.unshift({
-                time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-                admin: `📱 Онлайн (${clientName})`,
-                type: 'Онлайн Бронь',
-                details: `${pcListStr} (${tariffName})${attachedSummary.length > 0 ? ' + Бар: ' + attachedSummary.join(', ') : ''} [Тел: ${clientPhone}]`,
-                durationQty: `${durationHours} ч.`,
-                amount: totalCost
-            });
-            localStorage.setItem('cc20_transactions_state', JSON.stringify(existingTrans));
-
-            // Stats sync
-            const stats = JSON.parse(localStorage.getItem('cc20_stats_state') || '{"totalRevenue":0,"pcRevenue":0,"barRevenue":0}');
-            stats.pcRevenue += (clientSelectedPcIds.length * tariffPrice);
-            stats.barRevenue += totalBarRevenue;
-            stats.totalRevenue += totalCost;
-            localStorage.setItem('cc20_stats_state', JSON.stringify(stats));
-
-            pushStateSync();
-
-            // Populate Ticket Modal
             document.getElementById('ticket-id').innerText = bookingCode;
             document.getElementById('ticket-client-name').innerText = `${clientName} (${clientPhone})`;
             document.getElementById('ticket-pcs').innerText = pcListStr;
@@ -697,7 +674,7 @@
                     cardClass = 'bg-darkBg hover:bg-cardBg border-amber-500/50 glow-gold cursor-pointer';
                     const startFormatted = new Date(statusInfo.futureBooking.startTime).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
                     statusBadge = `<span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold text-[10px]">Бронь с ${startFormatted}</span>`;
-                    statusSubtext = `<span class="text-[10px] text-emerald-400 block font-bold">Свободен сейчас!</span>`;
+                    statusSubtext = `<span class="text-[10px] text-emerald-400 block font-bold">Свободен сейчас</span>`;
                 } else {
                     cardClass = 'bg-darkBg hover:bg-cardBg border-emerald-500/30 hover:border-emerald-500/60 glow-green cursor-pointer';
                     statusBadge = `<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold text-[10px]">Свободен</span>`;
