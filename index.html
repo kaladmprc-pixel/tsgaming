@@ -9,9 +9,9 @@
   <style>
     body { background-color: #0d1117; color: #f0f6fc; font-family: system-ui, -apple-system, sans-serif; }
     .glass-card { background: rgba(22, 27, 34, 0.85); border: 1px solid rgba(48, 54, 61, 0.8); backdrop-filter: blur(12px); }
-    .pc-card { transition: all 0.2s ease; cursor: pointer; }
-    .pc-card:hover { transform: translateY(-3px); }
-    .pc-card.selected { border-color: #00f2fe; box-shadow: 0 0 15px rgba(0, 242, 254, 0.3); }
+    .pc-card { transition: all 0.2s ease; cursor: pointer; user-select: none; }
+    .pc-card:hover { transform: translateY(-2px); }
+    .pc-card.selected { border-color: #00f2fe; background: rgba(0, 242, 254, 0.15); box-shadow: 0 0 12px rgba(0, 242, 254, 0.3); }
     .custom-scroll::-webkit-scrollbar { width: 6px; }
     .custom-scroll::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
   </style>
@@ -35,7 +35,7 @@
     </div>
   </header>
 
-  <!-- Главный контент -->
+  <!-- Главная секция -->
   <main class="max-w-7xl mx-auto px-4 mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
 
     <!-- Левая колонка: Выбор ПК -->
@@ -46,7 +46,7 @@
         <div class="relative z-10">
           <span class="text-xs uppercase font-bold tracking-wider text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-md border border-cyan-500/20">Онлайн бронирование</span>
           <h2 class="text-2xl font-black mt-2 text-white">ЗАБРОНИРУЙ СВОЁ ИГРОВОЕ МЕСТО</h2>
-          <p class="text-sm text-gray-400 mt-1">Выберите свободный ПК. Ваша заявка моментально передается на кассу.</p>
+          <p class="text-sm text-gray-400 mt-1">Выберите один или несколько ПК для компании.</p>
         </div>
       </div>
 
@@ -56,7 +56,9 @@
           <h3 class="font-bold text-lg flex items-center gap-2">
             <i class="fa-solid fa-desktop text-cyan-400"></i> Карта Игрового Зала (20 ПК)
           </h3>
-          <span class="text-xs text-gray-400">Нажмите на доступный ПК</span>
+          <span id="selectedCountBadge" class="text-xs text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-lg border border-cyan-500/30 font-semibold">
+            Выбрано: 1 ПК
+          </span>
         </div>
 
         <div id="pcGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -65,11 +67,11 @@
       </div>
     </div>
 
-    <!-- Правая колонка: Форма оформления -->
+    <!-- Правая колонка: Форма -->
     <div class="space-y-6">
       <div class="glass-card p-6 rounded-2xl border border-gray-800">
         <h3 class="font-bold text-lg mb-4 flex items-center gap-2 text-white">
-          <i class="fa-solid fa-[#00f2fe] fa-file-signature text-cyan-400"></i> Оформление Брони
+          <i class="fa-solid fa-file-signature text-cyan-400"></i> Оформление Брони
         </h3>
 
         <form id="bookingForm" onsubmit="handleBookingSubmit(event)" class="space-y-4">
@@ -95,7 +97,7 @@
           </div>
 
           <div>
-            <label class="block text-xs text-gray-400 mb-1 font-medium">Выбор Тарифа *</label>
+            <label class="block text-xs text-gray-400 mb-1 font-medium">Выбор Тарифа (на каждый ПК) *</label>
             <select id="tariffSelect" onchange="calculateTotal()" class="w-full bg-[#0d1117] border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500">
               <option value="1h|500">1 Час (500 ₸)</option>
               <option value="3h|1400">3 Часа (1 400 ₸)</option>
@@ -104,7 +106,7 @@
             </select>
           </div>
 
-          <!-- Блок Добавления Напитков -->
+          <!-- Напитки -->
           <div>
             <label class="block text-xs text-gray-400 mb-2 font-medium">Напитки к брони (необязательно)</label>
             <div class="space-y-2 max-h-40 overflow-y-auto custom-scroll pr-1">
@@ -128,7 +130,7 @@
           </div>
 
           <div class="pt-2 border-t border-gray-800 flex items-center justify-between">
-            <span class="text-sm text-gray-400">К оплате на кассе:</span>
+            <span class="text-sm text-gray-400">Итого на кассе:</span>
             <span id="totalDisplay" class="text-xl font-black text-amber-400">2 100 ₸</span>
           </div>
 
@@ -140,23 +142,21 @@
     </div>
   </main>
 
-  <!-- МОДАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ (CONFIRMATION MODAL) -->
+  <!-- Модальное окно подтверждения -->
   <div id="confirmModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-[#161b22] border border-cyan-500/40 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative text-center space-y-6 animate-fade-in">
+    <div class="bg-[#161b22] border border-cyan-500/40 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative text-center space-y-6">
       
-      <!-- Иконка статуса -->
       <div class="mx-auto w-16 h-16 bg-cyan-500/20 border border-cyan-500/40 rounded-2xl flex items-center justify-center">
         <i class="fa-solid fa-border-all text-cyan-400 text-2xl"></i>
       </div>
 
       <div>
-        <h3 class="text-2xl font-black uppercase text-white tracking-wide">Бронирование отправлено!</h3>
+        <h3 class="text-2xl font-black uppercase text-white tracking-wide">БРОНИРОВАНИЕ ОТПРАВЛЕНО!</h3>
         <p class="text-xs text-emerald-400 flex items-center justify-center gap-1.5 mt-1 font-medium">
           <i class="fa-solid fa-circle-check"></i> Информация поступила на кассу клуба
         </p>
       </div>
 
-      <!-- Карточка со сводкой детализации брони -->
       <div class="bg-[#0d1117] border border-gray-800 rounded-2xl p-4 text-left space-y-2 text-xs">
         <div class="flex justify-between border-b border-gray-800 pb-2">
           <span class="text-gray-400">Код брони:</span>
@@ -184,12 +184,11 @@
         </div>
       </div>
 
-      <!-- QR плашка для кассы -->
       <div class="bg-white rounded-2xl p-4 flex flex-col items-center justify-center text-black shadow-inner">
         <div class="w-16 h-16 border-4 border-black rounded-xl flex items-center justify-center mb-1">
           <i class="fa-solid fa-qrcode text-3xl"></i>
         </div>
-        <span class="text-[10px] font-black tracking-widest uppercase text-gray-800">Покажите на кассе</span>
+        <span class="text-[10px] font-black tracking-widest uppercase text-gray-800">ПОКАЖИТЕ НА КАССЕ</span>
       </div>
 
       <button onclick="closeModal()" class="w-full bg-cyan-400 hover:bg-cyan-300 text-black font-black py-3 rounded-xl uppercase text-xs tracking-wider transition">
@@ -199,12 +198,11 @@
   </div>
 
   <script>
-    let selectedPc = 4; // по умолчанию ПК-4
+    let selectedPcs = [4]; // Массив выбранных компьютеров
     let drinks = { energy: 0, soda: 0 };
     const drinkPrices = { energy: 700, soda: 500 };
 
     document.addEventListener("DOMContentLoaded", () => {
-      // Ставим сегодняшнюю дату по умолчанию
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('bookingDate').value = today;
       document.getElementById('bookingTime').value = "12:00";
@@ -213,21 +211,39 @@
       calculateTotal();
     });
 
+    function togglePcSelection(pcNum) {
+      const index = selectedPcs.indexOf(pcNum);
+      if (index > -1) {
+        // Не даем снять выделение со всех ПК одновременно (минимум 1)
+        if (selectedPcs.length > 1) {
+          selectedPcs.splice(index, 1);
+        }
+      } else {
+        selectedPcs.push(pcNum);
+      }
+      selectedPcs.sort((a, b) => a - b);
+      renderPcs();
+      calculateTotal();
+    }
+
     function renderPcs() {
       const grid = document.getElementById('pcGrid');
       grid.innerHTML = '';
+      
+      document.getElementById('selectedCountBadge').innerText = `Выбрано: ${selectedPcs.length} ПК`;
+
       for (let i = 1; i <= 20; i++) {
-        const isSelected = i === selectedPc;
+        const isSelected = selectedPcs.includes(i);
         const pcDiv = document.createElement('div');
-        pcDiv.className = `pc-card p-3 rounded-xl border ${isSelected ? 'border-cyan-400 bg-cyan-500/10' : 'border-gray-800 bg-[#0d1117]'} text-center`;
-        pcDiv.onclick = () => { selectedPc = i; renderPcs(); };
+        pcDiv.className = `pc-card p-3 rounded-xl border ${isSelected ? 'selected' : 'border-gray-800 bg-[#0d1117]'} text-center`;
+        pcDiv.onclick = () => togglePcSelection(i);
         
         pcDiv.innerHTML = `
           <div class="flex items-center justify-between text-xs mb-1">
             <span class="font-bold text-white">ПК-${i}</span>
-            <span class="text-[10px] text-emerald-400">Свободен</span>
+            <span class="text-[10px] ${isSelected ? 'text-cyan-300 font-bold' : 'text-emerald-400'}">${isSelected ? 'Выбран' : 'Свободен'}</span>
           </div>
-          <p class="text-[10px] text-gray-500">Нажмите для выбора</p>
+          <p class="text-[10px] text-gray-500">${isSelected ? 'Нажмите чтобы снять' : 'Нажмите для выбора'}</p>
         `;
         grid.appendChild(pcDiv);
       }
@@ -242,8 +258,11 @@
     function calculateTotal() {
       const tariffVal = document.getElementById('tariffSelect').value;
       const tariffPrice = parseInt(tariffVal.split('|')[1]) || 0;
+      
+      // Расчет цены тарифа на каждый выбранный ПК + напитки
+      const pcsTotal = tariffPrice * selectedPcs.length;
       const drinksTotal = (drinks.energy * drinkPrices.energy) + (drinks.soda * drinkPrices.soda);
-      const grandTotal = tariffPrice + drinksTotal;
+      const grandTotal = pcsTotal + drinksTotal;
       
       document.getElementById('totalDisplay').innerText = grandTotal.toLocaleString() + ' ₸';
       return grandTotal;
@@ -260,19 +279,16 @@
       const tariffText = tariffSelect.options[tariffSelect.selectedIndex].text;
       const totalCost = calculateTotal();
 
-      // Генерация кода брони вида #TS-3651
       const bookingCode = '#TS-' + Math.floor(1000 + Math.random() * 9000);
-
-      // Форматирование даты в европейский вид DD.MM.YYYY
       const dateParts = date.split('-');
       const formattedDate = `${dateParts[2]}.${dateParts[1]}.${dateParts[0]}`;
+      const pcText = selectedPcs.map(pc => `ПК-${pc}`).join(', ');
 
-      // Сохранение записи локально для кассы
       const newBooking = {
         code: bookingCode,
         client: name,
         phone: phone,
-        pc: selectedPc,
+        pcs: selectedPcs,
         date: formattedDate,
         time: time,
         tariff: tariffText,
@@ -285,24 +301,25 @@
       existingBookings.push(newBooking);
       localStorage.setItem('ts_club_bookings', JSON.stringify(existingBookings));
 
-      // Заполнение плашки подтверждения
+      // Заполнение модального окна
       document.getElementById('modalBookingCode').innerText = bookingCode;
       document.getElementById('modalClientInfo').innerText = `${name} (${phone})`;
-      document.getElementById('modalPcNum').innerText = `ПК-${selectedPc}`;
+      document.getElementById('modalPcNum').innerText = pcText;
       document.getElementById('modalDateTime').innerText = `${formattedDate} | ${time}`;
-      document.getElementById('modalTariff').innerText = tariffText.split('(')[0];
+      document.getElementById('modalTariff').innerText = `${tariffText.split('(')[0]} (${selectedPcs.length} шт.)`;
       document.getElementById('modalTotal').innerText = totalCost.toLocaleString() + ' ₸';
 
-      // Открытие Confirm окна
       document.getElementById('confirmModal').classList.remove('hidden');
     }
 
     function closeModal() {
       document.getElementById('confirmModal').classList.add('hidden');
       document.getElementById('bookingForm').reset();
+      selectedPcs = [4];
       drinks = { energy: 0, soda: 0 };
       document.getElementById('drink_energy_qty').innerText = '0';
       document.getElementById('drink_soda_qty').innerText = '0';
+      renderPcs();
       calculateTotal();
     }
   </script>
